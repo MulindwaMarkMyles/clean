@@ -65,7 +65,12 @@ if os.name == "nt":
         output = input("Your answer(y/n): ").lower()
         if output.__contains__("y"):
             print("The trash will be deleted..")
-            shutil.rmtree(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH",ignore_errors=True)
+            for item in list(os.listdir(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH")):
+                if os.path.isdir(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH/{item}"):
+                    os.rmdir(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH/{item}") 
+                else:
+                    os.remove(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH/{item}")
+            os.rmdir(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH")
         else:
             print("No deletions made..")
     else:
