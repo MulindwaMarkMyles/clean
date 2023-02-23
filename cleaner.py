@@ -1,7 +1,6 @@
 import os, time, sys
 
-# location = input("\nThe path of the drive to clean: ")
-location = "/users/mulin"
+location = input("\nThe path of the drive to clean: ")
 location = location.replace("/", "\\") if location.__contains__("/") else location
 the_paths = []
 
