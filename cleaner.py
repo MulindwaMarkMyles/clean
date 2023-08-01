@@ -1,5 +1,5 @@
 
-import os, time, sys ,shutil
+import os, shutil
 
 location = input("\nThe path of the drive to clean (default is the current directory): ")
 
@@ -21,33 +21,59 @@ def getContents(location):
                 return [],[]
 
 def toCheck(dir):
-        notToCheck = ['Appdata', '.git']
         for item in notToCheck:
                 if dir.__contains__(item):
                         return False
         return True
 
-
 if __name__ ==  "__main__":
         directories = []
+        notToCheck = ['AppData', '.', 'Windows','adb', 'Intel', 'mingw64', 'PerfLogs', 'Program Files', 'ProgramData', 'Recovery']
+        ignore = []
+        
+        if os.name == "nt":
+                try:
+                        desktopPath = os.path.join(os.environ["USERPROFILE"], "Desktop")
+                        os.mkdir(f"{desktopPath}/TRASH")
+                except Exception:
+                        pass
+        else:
+                try:
+                        desktopPath = os.path.expanduser("~/Desktop")
+                        os.mkdir(f"{desktopPath}/TRASH")
+                except Exception:
+                        pass
+        
 
         for dir, sub, _ in os.walk(location):
                 if toCheck(dir):
                         directories.append(dir)
                         for  item in sub:
                                 directories.append(os.path.join(dir, item))
+        
 
         for item in directories:
                 contents = getContents(item)
-                print(contents)
                 for file in contents[0]:
-                        if os.stat(os.path.join(item, file)).st_size == 0:
-                                print(os.path.basename(os.path.join(item, file)))
+                        try:
+                                if os.stat(os.path.join(item, file)).st_size == 0:
+                                        print(f"moved {os.path.basename(os.path.join(item, file))} from {item}.")
+                                        shutil
+                        except Exception as error:
+                                print(f"Failed to access file at {os.path.join(item,file)}")
+                                ignore.append(os.path.join(item, file))
+                                
                 for folder in contents[1]:
-                        if not os.listdir(os.path.join(item, folder)):
-                                print(os.path.basename(os.path.join(item, folder)))
+                        try:
+                                if not os.listdir(os.path.join(item, folder)):
+                                        print(f"{os.path.basename(os.path.join(item, folder))} from {item}")
+                        except Exception as error:
+                                print(f"Failed to access folder at {os.path.join(item, folder)}")
+                                ignore.append(os.path.join(item, folder))
 
-
+        if len(ignore) != 0:
+                print("\n\nFailed to access:\n\n")
+                print(ignore)
 # def visualize_directory_tree(directory_tree):
 #     for directories, subdirectories, files in directory_tree:
 #         # for dir in directories:
@@ -81,57 +107,3 @@ if __name__ ==  "__main__":
 #                     if item == "AppData" or item[0] == "." or item == "TRASH":
 #                         os.system(
 #                             f"cacls {os.path.join(path, item)} /e /p {os.getlogin()}:N"
-#                         )
-#                         the_paths.append(os.path.join(path, item))
-#                     else:
-#                         if not os.listdir(os.path.join(path, item)):
-#                             os.system(
-#                                 f"move {os.path.join(path,item)} /Users/{os.getlogin()}/Onedrive/Desktop/TRASH"
-#                             )
-#                             my_file.write(f"successfully moved {item} from {path}\n\n")
-
-#                 except Exception as error:
-#                     my_file.write(
-#                         f"Error working on {os.path.join(path,item)} due to {error}. \n\n"
-#                     )
-
-#             for item in files:
-#                 try:
-#                     if (
-#                         os.stat(os.path.join(path, item)).st_size == 0
-#                         and not item[0] == "."
-#                     ):
-#                         os.system(
-#                             f"move {os.path.join(path,item)} /Users/{os.getlogin()}/Onedrive/Desktop/TRASH"
-#                         )
-#                         my_file.write(f"successfully moved {item} from {path}\n\n")
-
-#                 except Exception as error:
-#                     my_file.write(
-#                         f"Error working on {os.path.join(path,item)} due to {error}. \n\n"
-#                     )
-
-#         # when done then restore permissions
-#         reverse(the_paths)
-#         #finally
-#         output = "Finished cleaning the file system, if you wish to check what has been deleted... \ncheck the TRASH folder on the desktop, and if u wish to proceed press y and n if not."
-#         for i in output:
-#             sys.stdout.write(i)
-#             sys.stdout.flush()
-#             time.sleep(0.025)
-#         output = input("Your answer(y/n): ").lower()
-#         if output.__contains__("y"):
-#             print("The trash will be deleted..")
-#             for item in list(os.listdir(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH")):
-#                 if os.path.isdir(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH/{item}"):
-#                     os.rmdir(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH/{item}") 
-#                 else:
-#                     os.remove(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH/{item}")
-#             os.rmdir(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH")
-#         else:
-#             print("No deletions made..")
-#     else:
-#         print("Failed to open..")
-
-# else:
-#     pass
