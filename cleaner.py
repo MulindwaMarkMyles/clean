@@ -1,10 +1,14 @@
 
-import os, shutil
+import os, time
 
-location = input("\nThe path of the drive to clean (default is the current directory): ")
+location = input("\nThe path of the drive to clean: ")
 
-if location == "":
-        location = "."
+for i in range(10):
+        if location == "":
+                print("\nYou didn't enter any path.")
+                location = input("\nThe path of the drive to clean: ")
+        else:
+                break
         
 location = os.path.normpath(location)
 
@@ -33,14 +37,19 @@ if __name__ ==  "__main__":
         
         if os.name == "nt":
                 try:
-                        desktopPath = os.path.join(os.environ["USERPROFILE"], "Desktop")
-                        os.mkdir(f"{desktopPath}/TRASH")
-                except Exception:
-                        pass
+                        trash = f"C:/Users/mulin/AppData/Local/Temp/TRASH"
+                        
+                        if not os.access(trash, os.F_OK):
+                                os.mkdir(f"C:/Users/mulin/AppData/Local/Temp/TRASH")
+                                
+                except Exception as error:
+                        print(error)
+
         else:
                 try:
                         desktopPath = os.path.expanduser("~/Desktop")
                         os.mkdir(f"{desktopPath}/TRASH")
+                        trash = f"{desktopPath}/TRASH"
                 except Exception:
                         pass
         
@@ -57,17 +66,30 @@ if __name__ ==  "__main__":
                 for file in contents[0]:
                         try:
                                 if os.stat(os.path.join(item, file)).st_size == 0:
-                                        print(f"moved {os.path.basename(os.path.join(item, file))} from {item}.")
-                                        shutil
-                        except Exception as error:
+                                        print(f"Cleaned {os.path.basename(os.path.join(item, file))} from {item}.")
+                                        # shutil.copy(os.path.join(item, file), trash)
+                                        newName = file
+                                        if file.__contains__(" "):
+                                                newName = file.replace(" ", "_")
+                                                os.system(f"cd {item}")
+                                                os.system(f"move '{file}' {newName} ")
+                                                os.system("cd -")
+                                        os.system(f"move {os.path.join(item, newName)} {trash}")
+                        except Exception:
                                 print(f"Failed to access file at {os.path.join(item,file)}")
                                 ignore.append(os.path.join(item, file))
                                 
                 for folder in contents[1]:
                         try:
                                 if not os.listdir(os.path.join(item, folder)):
-                                        print(f"{os.path.basename(os.path.join(item, folder))} from {item}")
-                        except Exception as error:
+                                        print(f"Cleaned {os.path.basename(os.path.join(item, folder))} from {item}")
+                                        # shutil.copy(os.path.join(item, folder), trash)
+                                        newName = folder
+                                        if folder.__contains__(" "):
+                                                newName = folder.replace(" ", "_")
+                                                os.rename(os.path.join(item, f'{folder}') ,os.path.join(item,newName))
+                                        os.system(f"move {os.path.join(item, newName)} {trash}")
+                        except Exception:
                                 print(f"Failed to access folder at {os.path.join(item, folder)}")
                                 ignore.append(os.path.join(item, folder))
 
