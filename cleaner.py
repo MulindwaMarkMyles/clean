@@ -67,13 +67,10 @@ if __name__ ==  "__main__":
                         try:
                                 if os.stat(os.path.join(item, file)).st_size == 0:
                                         print(f"Cleaned {os.path.basename(os.path.join(item, file))} from {item}.")
-                                        # shutil.copy(os.path.join(item, file), trash)
                                         newName = file
                                         if file.__contains__(" "):
                                                 newName = file.replace(" ", "_")
-                                                os.system(f"cd {item}")
-                                                os.system(f"move '{file}' {newName} ")
-                                                os.system("cd -")
+                                                os.rename(os.path.join(item, f'{file}') ,os.path.join(item,newName))
                                         os.system(f"move {os.path.join(item, newName)} {trash}")
                         except Exception:
                                 print(f"Failed to access file at {os.path.join(item,file)}")
@@ -83,7 +80,6 @@ if __name__ ==  "__main__":
                         try:
                                 if not os.listdir(os.path.join(item, folder)):
                                         print(f"Cleaned {os.path.basename(os.path.join(item, folder))} from {item}")
-                                        # shutil.copy(os.path.join(item, folder), trash)
                                         newName = folder
                                         if folder.__contains__(" "):
                                                 newName = folder.replace(" ", "_")
@@ -94,38 +90,12 @@ if __name__ ==  "__main__":
                                 ignore.append(os.path.join(item, folder))
 
         if len(ignore) != 0:
-                print("\n\nFailed to access:\n\n")
+                print("\nFailed to access:\n")
                 print(ignore)
-# def visualize_directory_tree(directory_tree):
-#     for directories, subdirectories, files in directory_tree:
-#         # for dir in directories:
-#         if directories
-#                 print(directories + "|")
-#                 for sub in subdirectories:
-#                       print(f"\t\t-{sub}")
-#                 for file in files:
-#                       print(f"\t\t\t-{file}")        
 
-# visualize_directory_tree(os.walk(location))
-
-                
-                      
-
-# def reverse(the_paths):
-#     for item in the_paths:
-#         os.system(f"cacls {item} /e /p {os.getlogin()}:F")
-
-
-# if os.name == "nt":
-#     try:
-#         os.mkdir(f"/users/{os.getlogin()}/Onedrive/Desktop/TRASH")
-#     except Exception:
-#         pass
-#     my_file = open(f"/Users/{os.getlogin()}/Onedrive/Desktop/TRASH/log.txt", "w")
-#     if my_file:
-#         for path, directories, files in os.walk(location):
-#             for item in directories:
-#                 try:
-#                     if item == "AppData" or item[0] == "." or item == "TRASH":
-#                         os.system(
-#                             f"cacls {os.path.join(path, item)} /e /p {os.getlogin()}:N"
+        choice = input("All empty files and folders have been removed, should i remove the TRASH folder from your pc (Y/N): ").lower()
+        
+        if choice == "y":
+                os.system("del /q/f/s %TEMP%\*")
+        else:
+                print("Check it out at {trash}")
