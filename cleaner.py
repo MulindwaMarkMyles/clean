@@ -1,5 +1,5 @@
 
-import os, time
+import os, threading, sys, time
 
 location = input("\nThe path of the drive to clean: ")
 
@@ -20,8 +20,7 @@ def getContents(location):
                 folders = [item for item in items if os.path.isdir(os.path.join(location, item))]
                 return files, folders
         
-        except Exception as error:
-                print(f"Error: {error}")
+        except Exception:
                 return [],[]
 
 def toCheck(dir):
@@ -30,62 +29,57 @@ def toCheck(dir):
                         return False
         return True
 
+def load(stopEvent):
+        while not stopEvent.is_set():
+                for item in ('|','/','-','\\'):
+                        sys.stdout.write(item + '\r')
+                        time.sleep(0.1)
+                        sys.stdout.flush()
+
 if __name__ ==  "__main__":
         directories = []
         notToCheck = ['AppData', '.', 'Windows','adb', 'Intel', 'mingw64', 'PerfLogs', 'Program Files', 'ProgramData', 'Recovery']
-        ignore = []
+        neverChecked = []
         
-        if os.name == "nt":
-                try:
-                        trash = f"C:/Users/mulin/AppData/Local/Temp/TRASH"
-                        
-                        if not os.access(trash, os.F_OK):
-                                os.mkdir(f"C:/Users/mulin/AppData/Local/Temp/TRASH")
-                                
-                except Exception as error:
-                        print(error)
-
-        else:
-                try:
-                        desktopPath = os.path.expanduser("~/Desktop")
-                        os.mkdir(f"{desktopPath}/TRASH")
-                        trash = f"{desktopPath}/TRASH"
-                except Exception:
-                        pass
+        stopEvent = threading.Event()
+        loader = threading.Thread(target=load, args=(stopEvent,))
+        loader.start()
         
-
         for dir, sub, _ in os.walk(location):
                 if toCheck(dir):
                         directories.append(dir)
                         for  item in sub:
                                 directories.append(os.path.join(dir, item))
-        
-        copy = directories
 
         for item in directories:
                 contents = getContents(item)
                 for file in contents[0]:
                         try:
                                 if os.stat(os.path.join(item, f"{file}")).st_size == 0:
-                                        print(os.system(r'del /f/q %s\"%s" ' % (item ,file)))
+                                        if os.name == 'nt':
+                                                os.system(r'del /f/q %s\"%s" ' % (item ,file))
+                                        else:
+                                                os.system(r'rm -f %s/"%s" ' % (item, file))
                         except Exception:
-                                ignore.append(os.path.join(item, file))
+                                neverChecked.append(os.path.join(item, f"{file}"))
                         
                 for folder in contents[1]:
                         try:
                                 if not os.listdir(os.path.join(item, f"{folder}")):
-                                        print(os.system(r'rmdir /q/s %s\"%s"' % (item, folder)))
+                                        if os.name == 'nt':
+                                                os.system(r'rmdir /q/s %s\"%s"' % (item, folder))
+                                        else:
+                                                os.system(r'rm -fd %s/"%s"' % (item, folder))
                         except Exception:
-                                ignore.append(os.path.join(item, folder))
-
-        if ignore:
+                                neverChecked.append(os.path.join(item, f"{folder}"))
+        
+        stopEvent.set()
+        loader.join()
+        
+        if neverChecked:
                 print("\nFailed to access:\n")
-                print(ignore)
+                print(neverChecked)
         
-                                
-        choice = input("All empty files and folders have been removed, should i remove the TRASH folder from your pc (Y/N): ").lower()
+        print(f"\n \nAll empty files and folders have been removed from {location}")
         
-        if choice == "y":
-                os.system("del /q/f/s %TEMP%\*")
-        else:
-                print("Check it out at {trash}")
+        
