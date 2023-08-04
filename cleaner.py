@@ -60,39 +60,29 @@ if __name__ ==  "__main__":
                         for  item in sub:
                                 directories.append(os.path.join(dir, item))
         
+        copy = directories
 
         for item in directories:
                 contents = getContents(item)
                 for file in contents[0]:
                         try:
-                                if os.stat(os.path.join(item, file)).st_size == 0:
-                                        print(f"Cleaned {os.path.basename(os.path.join(item, file))} from {item}.")
-                                        newName = file
-                                        if file.__contains__(" "):
-                                                newName = file.replace(" ", "_")
-                                                os.rename(os.path.join(item, f'{file}') ,os.path.join(item,newName))
-                                        os.system(f"move {os.path.join(item, newName)} {trash}")
+                                if os.stat(os.path.join(item, f"{file}")).st_size == 0:
+                                        print(os.system(r'del /f/q %s\"%s" ' % (item ,file)))
                         except Exception:
-                                print(f"Failed to access file at {os.path.join(item,file)}")
                                 ignore.append(os.path.join(item, file))
-                                
+                        
                 for folder in contents[1]:
                         try:
-                                if not os.listdir(os.path.join(item, folder)):
-                                        print(f"Cleaned {os.path.basename(os.path.join(item, folder))} from {item}")
-                                        newName = folder
-                                        if folder.__contains__(" "):
-                                                newName = folder.replace(" ", "_")
-                                                os.rename(os.path.join(item, f'{folder}') ,os.path.join(item,newName))
-                                        os.system(f"move {os.path.join(item, newName)} {trash}")
+                                if not os.listdir(os.path.join(item, f"{folder}")):
+                                        print(os.system(r'rmdir /q/s %s\"%s"' % (item, folder)))
                         except Exception:
-                                print(f"Failed to access folder at {os.path.join(item, folder)}")
                                 ignore.append(os.path.join(item, folder))
 
-        if len(ignore) != 0:
+        if ignore:
                 print("\nFailed to access:\n")
                 print(ignore)
-
+        
+                                
         choice = input("All empty files and folders have been removed, should i remove the TRASH folder from your pc (Y/N): ").lower()
         
         if choice == "y":

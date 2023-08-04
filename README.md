@@ -1,5 +1,4 @@
 
-The ultimate command line tool for your pc, to clean
-- It cleans all empty files in a given path
-- It cleans all temporary files
-- It sorts all your files in at a given path
+- It cleans all empty files and folders in a given path and gives u a clutter free expierience.
+- It sorts all files in a given path in their respective folders
+* Be sure to use it with elevated permissions *
