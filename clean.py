@@ -24,6 +24,8 @@ def getContents(location):
                 return [],[]
 
 def toCheck(dir):
+        if dir == ".":
+                return True
         for item in notToCheck:
                 if dir.__contains__(item):
                         return False
@@ -77,7 +79,7 @@ if __name__ ==  "__main__":
         loader.join()
         
         if neverChecked:
-                print("\nFailed to access:\n")
+                print("\n\nFailed to access:\n")
                 print(neverChecked)
         
         print(f"\n \nAll empty files and folders have been removed from {location}")
