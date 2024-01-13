@@ -70,9 +70,9 @@ if __name__ ==  "__main__":
                                         try:
                                                 if os.stat(os.path.join(item, f"{file}")).st_size == 0:
                                                         if os.name == 'nt':
-                                                                os.system(r'del /f/q %s ' % (os.path.join(item ,f"{file}")))
+                                                                os.system(r'del /f/q %s\"%s" ' % (item ,f"{file}"))
                                                         else:
-                                                                os.system(r'rm -f %s ' % (os.path.join(item, f"{file}")))
+                                                                os.system(r'rm -f %s/"%s" ' % (item, f"{file}"))
                                         except Exception:
                                                 neverChecked.append(os.path.join(item, f"{file}"))
                                         
@@ -80,9 +80,9 @@ if __name__ ==  "__main__":
                                         try:
                                                 if not os.listdir(os.path.join(item, f"{folder}")):
                                                         if os.name == 'nt':
-                                                                os.system(r'rmdir /q/s %s' % (os.path.join(item, f"{folder}")))
+                                                                os.system(r'rmdir /q/s %s\"%s" ' % (item, f"{folder}"))
                                                         else:
-                                                                os.system(r'rm -fd %s' % (os.path.join(item, f"{folder}")))
+                                                                os.system(r'rm -fd %s/"%s" ' % (item, f"{folder}"))
                                         except Exception:
                                                 neverChecked.append(os.path.join(item, f"{folder}"))
                         
@@ -110,11 +110,12 @@ if __name__ ==  "__main__":
                         location = os.path.normpath(location)
 
                         mappings = {
-                                "Applications":["exe","msix","msixbundle"],
+                                "Applications":["exe","msix","msixbundle","msi"],
                                 "Music":["wav","mp3","m4a","aac","wma","aiff","flac","ape","midi"],
                                 "Videos":["mp4","avi","mkv","mov","wmv","flv","webm","3gp","mpeg","ogv"],
-                                "Scripts": ["bat","ps1","wsf","sh","py","js","pl","rb"],
-                                "Pictures": ["jpeg","jpg","png","gif","tiff","bmp","tif","webp","svg","raw"]
+                                "Scripts": ["bat","ps1","wsf","sh","py","js","pl","rb","PY"],
+                                "Pictures": ["jpeg","jpg","png","gif","tiff","bmp","tif","webp","svg","raw","jfif"],
+                                "Documents":["docx","doc","pptx","ppt","pdf","dotx","xlsx","xlsm","xltx","xltm","pptm","potx","potm","ppsx","ppsm","pst","ost","accdb","accdt","one","onepkg"]
                         }
 
                         neverMoved = []
@@ -139,20 +140,23 @@ if __name__ ==  "__main__":
                                                         makeFolder(folder)
                                                         try:
                                                                 if os.name == 'nt':
-                                                                        os.system(r'move %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,folder)))
+                                                                        os.system(r'move %s\"%s" "%s" ' % (location, file ,os.path.join(location,folder)))
                                                                 else:
-                                                                        os.system(r'mv %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,folder)))
+                                                                        os.system(r'mv %s/"%s" "%s" ' % (location, file ,os.path.join(location,folder)))
                                                         except Exception as e:
                                                                 neverMoved.append(os.path.join(location, f"{file}"))
-                                                else:
-                                                        makeFolder("misc")
-                                                        try:
-                                                                if os.name == 'nt':
-                                                                        os.system(r'move %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,"misc")))
-                                                                else:
-                                                                        os.system(r'mv %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,"misc")))
-                                                        except Exception as e:
-                                                                neverMoved.append(os.path.join(location, f"{file}"))  
+                                                        break
+                                        else:
+                                                folder = "misc"
+                                                makeFolder(folder)
+                                                try:
+                                                        if os.name == 'nt':
+                                                                os.system(r'move %s\"%s" "%s" ' % (location, file ,os.path.join(location,folder)))
+                                                        else:
+                                                                os.system(r'mv %s/"%s" "%s" ' % (location, file ,os.path.join(location,folder)))
+                                                except Exception as e:
+                                                        neverMoved.append(os.path.join(location, f"{file}"))  
+                                                
                         print("All files have been organised except these:")
                         print(neverMoved)    
 
