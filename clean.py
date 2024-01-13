@@ -1,9 +1,11 @@
 
 import os, threading, sys, time
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
-print("\n\nThis program can 'remove-empty' files, 'organise-files' and 'check-updates' on files.\n\n")
+print("\n\nThis program can 'remove-empty' files, 'organise-files' and 'monitor-files' on files.\n\n")
 
-action = input("What would you like to do?")
+action = input("What would you like to do: ")
 
 
 def getContents(location):
@@ -68,9 +70,9 @@ if __name__ ==  "__main__":
                                         try:
                                                 if os.stat(os.path.join(item, f"{file}")).st_size == 0:
                                                         if os.name == 'nt':
-                                                                os.system(r'del /f/q %s"%s" ' % (item ,file))
+                                                                os.system(r'del /f/q %s ' % (os.path.join(item ,f"{file}")))
                                                         else:
-                                                                os.system(r'rm -f %s/"%s" ' % (item, file))
+                                                                os.system(r'rm -f %s ' % (os.path.join(item, f"{file}")))
                                         except Exception:
                                                 neverChecked.append(os.path.join(item, f"{file}"))
                                         
@@ -78,9 +80,9 @@ if __name__ ==  "__main__":
                                         try:
                                                 if not os.listdir(os.path.join(item, f"{folder}")):
                                                         if os.name == 'nt':
-                                                                os.system(r'rmdir /q/s %s"%s"' % (item, folder))
+                                                                os.system(r'rmdir /q/s %s' % (os.path.join(item, f"{folder}")))
                                                         else:
-                                                                os.system(r'rm -fd %s/"%s"' % (item, folder))
+                                                                os.system(r'rm -fd %s' % (os.path.join(item, f"{folder}")))
                                         except Exception:
                                                 neverChecked.append(os.path.join(item, f"{folder}"))
                         
@@ -111,28 +113,76 @@ if __name__ ==  "__main__":
                                 "Applications":["exe","msix","msixbundle"],
                                 "Music":["wav","mp3","m4a","aac","wma","aiff","flac","ape","midi"],
                                 "Videos":["mp4","avi","mkv","mov","wmv","flv","webm","3gp","mpeg","ogv"],
-                                "Scripts": ["bat","ps1","wsf","sh","py","js","pl","rb"]
+                                "Scripts": ["bat","ps1","wsf","sh","py","js","pl","rb"],
+                                "Pictures": ["jpeg","jpg","png","gif","tiff","bmp","tif","webp","svg","raw"]
                         }
 
                         neverMoved = []
 
                         contents = getContents(location)
                         
-                        def makeFolder(folder)
+                        def makeFolder(folder):
                                 try:
                                         os.mkdir(os.path.join(location,folder))
                                 except Exception:
                                         pass
 
+                        def getFileExtension(file):
+                                _, file_ext = os.path.splitext(file)
+                                return file_ext
+
                         for file in contents[0]:
-                                for folder in mappings:
-                                        if file[file.find("."):] in mappings[folder]:
-                                                makeFolder(folder)
-                                                try:
-                                                        if os.name == 'nt':
-                                                                os.system(r'move %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,folder)))
-                                                        else:
-                                                                os.system(r'mv %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,folder)))
-                                                except Exception:
-                                                        neverMoved.append(os.path.join(location, f"{file}"))
-                                                
+                                if file != "clean.py":
+                                        for folder in mappings:
+                                                file_ext = getFileExtension(os.path.join(location,file)).replace(".","")
+                                                if file_ext in mappings[folder]:
+                                                        makeFolder(folder)
+                                                        try:
+                                                                if os.name == 'nt':
+                                                                        os.system(r'move %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,folder)))
+                                                                else:
+                                                                        os.system(r'mv %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,folder)))
+                                                        except Exception as e:
+                                                                neverMoved.append(os.path.join(location, f"{file}"))
+                                                else:
+                                                        makeFolder("misc")
+                                                        try:
+                                                                if os.name == 'nt':
+                                                                        os.system(r'move %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,"misc")))
+                                                                else:
+                                                                        os.system(r'mv %s "%s" ' % (os.path.join(location,file) ,os.path.join(location,"misc")))
+                                                        except Exception as e:
+                                                                neverMoved.append(os.path.join(location, f"{file}"))  
+                        print("All files have been organised except these:")
+                        print(neverMoved)    
+
+                case "monitor-files":
+                        location = input("\nEnter the path to the file/folder: ")
+
+                        location = os.path.normpath(location)
+
+                        class MyHandler(FileSystemEventHandler):
+                                def on_any_event(self,event):
+                                        if event.is_directory:
+                                                print(f"\nThe folder '{event.src_path}' has been modified.")
+                                        else:
+                                                print(f"\nThe file '{event.src_path}' has been modified.")
+
+                        observer = Observer()
+
+                        observer.schedule(MyHandler(), path=location, recursive=True)
+
+                        observer.start()
+
+                        #makes the observer run until interupted by the keyboard
+                        try:
+                                while 1:
+                                        pass
+                        except KeyboardInterrupt:
+                                observer.stop()
+
+                        observer.join()
+
+                case _:
+
+                        print("\nNo valid input was received.")
