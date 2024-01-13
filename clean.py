@@ -156,9 +156,11 @@ if __name__ ==  "__main__":
                                                                 os.system(r'mv %s/"%s" "%s" ' % (location, file ,os.path.join(location,folder)))
                                                 except Exception as e:
                                                         neverMoved.append(os.path.join(location, f"{file}"))  
-                                                
-                        print("All files have been organised except these:")
-                        print(neverMoved)    
+                        if neverMoved:               
+                                print("\nAll files have been organised except these:")
+                                print(neverMoved)  
+                        else:  
+                                print("\nDone!")
 
                 case "monitor-files":
                         location = input("\nEnter the path to the file/folder: ")
