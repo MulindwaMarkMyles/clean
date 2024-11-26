@@ -3,7 +3,7 @@ import os, threading, sys, time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-print("\n\nThis program can 'remove-empty' files, 'organise-files' and 'monitor-files' on files.\n\n")
+print("\n\nThis program can 'remove-empty' files, 'organise-files' and 'monitor-files' on files and 'remove-DS' for removing ds files.\n\n")
 
 action = input("What would you like to do: ")
 
@@ -41,6 +41,49 @@ if __name__ ==  "__main__":
         neverChecked = []
 
         match action:
+                case 'remove-DS':
+                    location = input("\nThe path to remove the DS files: ")
+                    
+                    for i in range(10):
+                            if location == "":
+                                    print("\nYou didn't enter any path.")
+                                    location = input("\nThe path of the drive to clean: ")
+                            else:
+                                    break
+                                
+                    location = os.path.normpath(location)
+                    
+                    stopEvent = threading.Event()
+                    loader = threading.Thread(target=load, args=(stopEvent,))
+                    loader.start()
+                    
+                    for dir, sub, _ in os.walk(location):
+                            if toCheck(dir):
+                                    directories.append(dir)
+                                    for  item in sub:
+                                            directories.append(os.path.join(dir, item))
+
+                    for item in directories:
+                            contents = getContents(item)
+                            for file in contents[0]:
+                                    try:    
+                                            if file == '.DS_Store':
+                                                    if os.name == 'nt':
+                                                            os.system(r'del /f/q %s\"%s" ' % (item ,f"{file}"))
+                                                    else:
+                                                            os.system(r'rm -f %s/"%s" ' % (item, f"{file}"))
+                                    except Exception:
+                                            neverChecked.append(os.path.join(item, f"{file}"))
+                                            
+                    stopEvent.set()
+                    loader.join()
+                    
+                    if neverChecked:
+                            print("\n\nFailed to access:\n")
+                            print(neverChecked)
+                    
+                    print(f"\n\nAll DS files have been removed from {location}")
+                    
                 case "remove-empty":
 
                         location = input("\nThe path of the drive to clean: ")
